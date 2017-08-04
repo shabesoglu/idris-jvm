@@ -134,8 +134,20 @@ runAsm subroutines assembler Aconstnull = singleInst subroutines $ invokeInstanc
 runAsm subroutines assembler (Aload n) = singleInst subroutines $ invokeInstance "aload" (Assembler -> Int -> JVM_IO ()) assembler n
 
 runAsm subroutines assembler (Anewarray desc) = singleInst subroutines $ invokeInstance "anewarray" (Assembler -> String -> JVM_IO ()) assembler desc
-runAsm subroutines assembler (Astore n) = singleInst subroutines $ invokeInstance "astore" (Assembler -> Int -> JVM_IO ()) assembler n
+runAsm subroutines assembler Anewintarray = singleInst subroutines $ invokeInstance "anewintarray" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Anewbooleanarray = singleInst subroutines $ invokeInstance "anewbooleanarray" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Anewbytearray = singleInst subroutines $ invokeInstance "anewbytearray" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Anewchararray = singleInst subroutines $ invokeInstance "anewchararray" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Anewshortarray = singleInst subroutines $ invokeInstance "anewshortarray" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Anewlongarray = singleInst subroutines $ invokeInstance "anewlongarray" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Anewfloatarray = singleInst subroutines $ invokeInstance "anewfloatarray" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Anewdoublearray = singleInst subroutines $ invokeInstance "anewdoublearray" (Assembler -> JVM_IO ()) assembler
+
+runAsm subroutines assembler Arraylength = singleInst subroutines $ invokeInstance "arraylength" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Areturn = singleInst subroutines $ invokeInstance "areturn" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler (Astore n) = singleInst subroutines $ invokeInstance "astore" (Assembler -> Int -> JVM_IO ()) assembler n
+runAsm subroutines assembler Bastore = singleInst subroutines $ invokeInstance "bastore" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Castore = singleInst subroutines $ invokeInstance "castore" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler (Checkcast desc) = singleInst subroutines $ invokeInstance "checkcast" (Assembler -> String -> JVM_IO ()) assembler desc
 runAsm subroutines assembler (ClassCodeStart version access className sig parent intf anns) = singleInst subroutines $ do
   let janns = toJAnnotation <$> anns
@@ -191,6 +203,7 @@ runAsm subroutines assembler (CreateMethod accs className methodName desc sig ex
     (believe_me jparamAnns)
 
 runAsm subroutines assembler Dadd = singleInst subroutines $ invokeInstance "dadd" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Dastore = singleInst subroutines $ invokeInstance "dastore" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Ddiv = singleInst subroutines $ invokeInstance "ddiv" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler (Dload n) = singleInst subroutines $ invokeInstance "dload" (Assembler -> Int -> JVM_IO ()) assembler n
 runAsm subroutines assembler Dmul = singleInst subroutines $ invokeInstance "dmul" (Assembler -> JVM_IO ()) assembler
@@ -200,6 +213,7 @@ runAsm subroutines assembler Dsub = singleInst subroutines $ invokeInstance "dsu
 runAsm subroutines assembler Dup = singleInst subroutines $ invokeInstance "dup" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler (Error err) = singleInst subroutines $ invokeInstance "error" (Assembler -> String -> JVM_IO ()) assembler err
 runAsm subroutines assembler F2d = singleInst subroutines $ invokeInstance "f2d" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Fastore = singleInst subroutines $ invokeInstance "fastore" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler (Field finsType cname fname desc) = singleInst subroutines $ do
   let finsTypeNum = fieldInsTypeNum finsType
   invokeInstance
@@ -257,6 +271,7 @@ runAsm subroutines assembler I2c = singleInst subroutines $ invokeInstance "i2c"
 runAsm subroutines assembler I2l = singleInst subroutines $ invokeInstance "i2l" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Iadd = singleInst subroutines $ invokeInstance "iadd" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Iand = singleInst subroutines $ invokeInstance "iand" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Iastore = singleInst subroutines $ invokeInstance "iastore" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Ior = singleInst subroutines $ invokeInstance "ior" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Ixor = singleInst subroutines $ invokeInstance "ixor" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Icompl = singleInst subroutines $ invokeInstance "icompl" (Assembler -> JVM_IO ()) assembler
@@ -305,6 +320,7 @@ runAsm subroutines assembler L2i = singleInst subroutines $ invokeInstance "l2i"
 runAsm subroutines assembler (LabelStart label) = singleInst subroutines $ invokeInstance "labelStart" (Assembler -> String -> JVM_IO ()) assembler label
 runAsm subroutines assembler Ladd = singleInst subroutines $ invokeInstance "ladd" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Land = singleInst subroutines $ invokeInstance "land" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Lastore = singleInst subroutines $ invokeInstance "lastore" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Lor = singleInst subroutines $ invokeInstance "lor" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Lxor = singleInst subroutines $ invokeInstance "lxor" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Lcompl = singleInst subroutines $ invokeInstance "lcompl" (Assembler -> JVM_IO ()) assembler
@@ -336,11 +352,13 @@ runAsm subroutines assembler (MaxStackAndLocal stack local)
   = singleInst subroutines $ invokeInstance "maxStackAndLocal" (Assembler -> Int -> Int -> JVM_IO ()) assembler stack local
 runAsm subroutines assembler MethodCodeStart = singleInst subroutines $ invokeInstance "methodCodeStart" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler MethodCodeEnd = singleInst subroutines $ invokeInstance "methodCodeEnd" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler (Multianewarray desc dims) = singleInst subroutines $ invokeInstance "multiANewArray" (Assembler -> String -> Int -> JVM_IO ()) assembler desc (cast dims)
 runAsm subroutines assembler (New cname) = singleInst subroutines $ invokeInstance "asmNew" (Assembler -> String -> JVM_IO ()) assembler cname
 runAsm subroutines assembler (InstanceOf cname) = singleInst subroutines $ invokeInstance "asmInstanceOf" (Assembler -> String -> JVM_IO ()) assembler cname
 runAsm subroutines assembler Pop = singleInst subroutines $ invokeInstance "pop" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Pop2 = singleInst subroutines $ invokeInstance "pop2" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler Return = singleInst subroutines $ invokeInstance "asmReturn" (Assembler -> JVM_IO ()) assembler
+runAsm subroutines assembler Sastore = singleInst subroutines $ invokeInstance "sastore" (Assembler -> JVM_IO ()) assembler
 runAsm subroutines assembler ShouldDescribeFrame = singleInst subroutines $ invokeInstance "shouldDescribeFrame" (Assembler -> JVM_IO Bool) assembler
 runAsm subroutines assembler (SourceInfo sourceFileName)
   = singleInst subroutines $ invokeInstance "sourceInfo" (Assembler -> String -> JVM_IO ()) assembler sourceFileName

@@ -16,7 +16,7 @@ mutual
 
   data ReferenceTypeDescriptor = ClassDesc ClassName
                                | InterfaceDesc ClassName
-                               | ArrayDesc ReferenceTypeDescriptor
+                               | ArrayDesc FieldTypeDescriptor
                                | IdrisExportDesc ClassName
                                | NullableStrDesc
                                | NullableRefDesc ClassName
@@ -114,7 +114,7 @@ mutual
   Show ReferenceTypeDescriptor where
     show (ClassDesc className) = "ClassDesc " ++ show className
     show (InterfaceDesc className) = "InterfaceDesc " ++ show className
-    show (ArrayDesc referenceTypeDescriptor) = "ArrayDesc " ++ show referenceTypeDescriptor
+    show (ArrayDesc tyDesc) = "ArrayDesc " ++ show tyDesc
     show (IdrisExportDesc className) = "IdrisExportDesc " ++ show className
     show NullableStrDesc = "NullableStrDesc"
     show (NullableRefDesc className) = "NullableRefDesc" ++ show className
@@ -146,34 +146,34 @@ Eq JMethodName where
 Show JMethodName where
   show (MkJMethodName cname mname) = cname ++ "#" ++ mname
 
+mutual
+    asmRefTyDesc : ReferenceTypeDescriptor -> String
+    asmRefTyDesc (ClassDesc c)       = "L" ++ c ++ ";"
+    asmRefTyDesc (IdrisExportDesc c) = "L" ++ c ++ ";"
+    asmRefTyDesc (InterfaceDesc c)   = "L" ++ c ++ ";"
+    asmRefTyDesc (NullableRefDesc c) = "L" ++ c ++ ";"
+    asmRefTyDesc NullableStrDesc     = "Ljava/lang/String;"
+    asmRefTyDesc (ArrayDesc ty)   = "[" ++ asmFieldTypeDesc ty
 
-asmRefTyDesc : ReferenceTypeDescriptor -> String
-asmRefTyDesc (ClassDesc c)       = "L" ++ c ++ ";"
-asmRefTyDesc (IdrisExportDesc c) = "L" ++ c ++ ";"
-asmRefTyDesc (InterfaceDesc c)   = "L" ++ c ++ ";"
-asmRefTyDesc (NullableRefDesc c) = "L" ++ c ++ ";"
-asmRefTyDesc NullableStrDesc     = "Ljava/lang/String;"
-asmRefTyDesc (ArrayDesc refTy)   = "[" ++ asmRefTyDesc refTy
+    refTyClassName : ReferenceTypeDescriptor -> ClassName
+    refTyClassName (ClassDesc c)       = c
+    refTyClassName (InterfaceDesc c)   = c
+    refTyClassName (IdrisExportDesc c) = c
+    refTyClassName (NullableRefDesc c) = c
+    refTyClassName NullableStrDesc     = "java/lang/String"
+    refTyClassName arr@(ArrayDesc _)   = asmRefTyDesc arr
 
-refTyClassName : ReferenceTypeDescriptor -> ClassName
-refTyClassName (ClassDesc c)       = c
-refTyClassName (InterfaceDesc c)   = c
-refTyClassName (IdrisExportDesc c) = c
-refTyClassName (NullableRefDesc c) = c
-refTyClassName NullableStrDesc     = "java/lang/String"
-refTyClassName arr@(ArrayDesc _)   = asmRefTyDesc arr
-
-asmFieldTypeDesc : FieldTypeDescriptor -> String
-asmFieldTypeDesc FieldTyDescByte          = "B"
-asmFieldTypeDesc FieldTyDescChar          = "C"
-asmFieldTypeDesc FieldTyDescShort         = "S"
-asmFieldTypeDesc FieldTyDescBoolean       = "Z"
-asmFieldTypeDesc FieldTyDescArray         = "["
-asmFieldTypeDesc FieldTyDescDouble        = "D"
-asmFieldTypeDesc FieldTyDescFloat         = "F"
-asmFieldTypeDesc FieldTyDescInt           = "I"
-asmFieldTypeDesc FieldTyDescLong          = "J"
-asmFieldTypeDesc (FieldTyDescReference f) = asmRefTyDesc f
+    asmFieldTypeDesc : FieldTypeDescriptor -> String
+    asmFieldTypeDesc FieldTyDescByte          = "B"
+    asmFieldTypeDesc FieldTyDescChar          = "C"
+    asmFieldTypeDesc FieldTyDescShort         = "S"
+    asmFieldTypeDesc FieldTyDescBoolean       = "Z"
+    asmFieldTypeDesc FieldTyDescArray         = "["
+    asmFieldTypeDesc FieldTyDescDouble        = "D"
+    asmFieldTypeDesc FieldTyDescFloat         = "F"
+    asmFieldTypeDesc FieldTyDescInt           = "I"
+    asmFieldTypeDesc FieldTyDescLong          = "J"
+    asmFieldTypeDesc (FieldTyDescReference f) = asmRefTyDesc f
 
 asmTypeDesc : TypeDescriptor -> String
 asmTypeDesc (FieldDescriptor t) = asmFieldTypeDesc t
@@ -190,8 +190,21 @@ data Asm : Type -> Type where
     Aconstnull : Asm ()
     Aload : Int -> Asm ()
     Anewarray : Descriptor -> Asm ()
-    Astore : Int -> Asm ()
+
+    Anewbooleanarray : Asm ()
+    Anewbytearray : Asm ()
+    Anewchararray : Asm ()
+    Anewshortarray : Asm ()
+    Anewintarray : Asm ()
+    Anewlongarray : Asm ()
+    Anewfloatarray : Asm ()
+    Anewdoublearray : Asm ()
+
+    Arraylength : Asm ()
     Areturn : Asm ()
+    Astore : Int -> Asm ()
+    Bastore : Asm ()
+    Castore : Asm ()
     Checkcast : Descriptor -> Asm ()
     ClassCodeStart : Int -> Access -> ClassName -> (Maybe Signature) -> ClassName -> List ClassName -> List Annotation -> Asm ()
     ClassCodeEnd : String -> Asm ()
@@ -201,6 +214,7 @@ data Asm : Type -> Type where
     CreateMethod : List Access -> ClassName -> MethodName -> Descriptor -> Maybe Signature ->
                    Maybe (List Exception) -> List Annotation -> List (List Annotation) -> Asm ()
     Dadd : Asm ()
+    Dastore : Asm ()
     Ddiv : Asm ()
     Dload : Int -> Asm ()
     Dmul : Asm ()
@@ -210,6 +224,7 @@ data Asm : Type -> Type where
     Dup : Asm ()
     Error : String -> Asm ()
     F2d : Asm ()
+    Fastore : Asm ()
     Field : FieldInsType -> ClassName -> FieldName -> Descriptor -> Asm ()
     FieldEnd : Asm ()
     Fload : Int -> Asm ()
@@ -225,6 +240,7 @@ data Asm : Type -> Type where
     I2l : Asm ()
     Iadd : Asm ()
     Iand : Asm ()
+    Iastore : Asm ()
     Ior : Asm ()
     Ixor : Asm ()
     Icompl : Asm ()
@@ -250,6 +266,7 @@ data Asm : Type -> Type where
     LabelStart : Label -> Asm ()
     Ladd : Asm ()
     Land : Asm ()
+    Lastore : Asm ()
     Lor : Asm ()
     Lxor : Asm ()
     Lcompl : Asm ()
@@ -267,11 +284,13 @@ data Asm : Type -> Type where
     MaxStackAndLocal : Int -> Int -> Asm ()
     MethodCodeStart : Asm ()
     MethodCodeEnd : Asm ()
+    Multianewarray : Descriptor -> Nat -> Asm ()
     New : ClassName -> Asm ()
     InstanceOf : ClassName -> Asm ()
     Pop : Asm ()
     Pop2 : Asm ()
     Return : Asm ()
+    Sastore : Asm ()
     ShouldDescribeFrame : Asm Bool
     SourceInfo : SourceFileName -> Asm ()
     Subroutine : Asm () -> Asm ()

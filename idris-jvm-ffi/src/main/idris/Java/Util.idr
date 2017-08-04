@@ -16,6 +16,33 @@ namespace Arrays
   toString : Inherits ObjectArray that => that -> JVM_IO String
   toString arr = invokeStatic ArraysClass "toString" (ObjectArray -> JVM_IO String) (believe_me arr)
 
+  toStringBooleanArray : JVM_Array JavaBoolean -> JVM_IO String
+  toStringBooleanArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaBoolean -> JVM_IO String) arr
+
+  toStringByteArray : JVM_Array JavaByte -> JVM_IO String
+  toStringByteArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaByte -> JVM_IO String) arr
+
+  toStringCharArray : JVM_Array JavaChar -> JVM_IO String
+  toStringCharArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaChar -> JVM_IO String) arr
+
+  toStringShortArray : JVM_Array JavaShort -> JVM_IO String
+  toStringShortArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaShort -> JVM_IO String) arr
+
+  toStringIntArray : JVM_Array JavaInt -> JVM_IO String
+  toStringIntArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaInt -> JVM_IO String) arr
+
+  toStringLongArray : JVM_Array JavaLong -> JVM_IO String
+  toStringLongArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaLong -> JVM_IO String) arr
+
+  toStringFloatArray : JVM_Array JavaFloat -> JVM_IO String
+  toStringFloatArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaFloat -> JVM_IO String) arr
+
+  toStringDoubleArray : JVM_Array JavaDouble -> JVM_IO String
+  toStringDoubleArray arr = invokeStatic ArraysClass "toString" (JVM_Array JavaDouble -> JVM_IO String) arr
+
+  deepToString : Inherits ObjectArray that => that -> JVM_IO String
+  deepToString arr = invokeStatic ArraysClass "deepToString" (ObjectArray -> JVM_IO String) (believe_me arr)
+
 namespace Iterator
 
   Iterator : Type

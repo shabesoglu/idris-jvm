@@ -96,6 +96,11 @@ repeatObjectDesc n = repeatString n "Ljava/lang/Object;"
 sig : Nat -> String
 sig nArgs = "(" ++ repeatObjectDesc nArgs ++  ")Ljava/lang/Object;"
 
+arrayDesc : String -> Nat -> String
+arrayDesc cname dimensions =
+  let arrayPrefix = cast $ replicate dimensions '['
+  in arrayPrefix ++ cname
+
 metafactoryDesc : Descriptor
 metafactoryDesc =
   concat [ "("
@@ -130,6 +135,18 @@ invokeDynamic cname lambda nArgs =
                       , BsmArgHandle lambdaHandle
                       , BsmArgGetType "()Ljava/lang/Object;"
                       ]
+
+arrayStore : FieldTypeDescriptor -> Asm ()
+arrayStore FieldTyDescByte = Bastore
+arrayStore FieldTyDescChar = Castore
+arrayStore FieldTyDescShort = Sastore
+arrayStore FieldTyDescBoolean = Bastore
+arrayStore FieldTyDescArray = Aastore
+arrayStore FieldTyDescDouble = Dastore
+arrayStore FieldTyDescFloat = Fastore
+arrayStore FieldTyDescInt = Iastore
+arrayStore FieldTyDescLong = Lastore
+arrayStore (FieldTyDescReference ReferenceTypeDescriptor) = Aastore
 
 loadArgsForLambdaTargetMethod : Nat -> Asm ()
 loadArgsForLambdaTargetMethod nArgs = case isLTE 1 nArgs of

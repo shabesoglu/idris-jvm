@@ -164,6 +164,108 @@ mutual
       InvokeMethod InvokeSpecial clazz "<init>" descriptor False
       ret
 
+    cgForeign (JNewArray elemTy) = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewarray elemTy
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array: " ++ elemTy
+
+    cgForeign JNewBooleanArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewbooleanarray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JNewByteArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewbytearray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JNewCharArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewchararray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JNewShortArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewshortarray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JNewIntArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewintarray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JNewLongArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewlongarray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JNewFloatArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewfloatarray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JNewDoubleArray = case args of
+      [ty] => do
+        idrisToJava argsWithTypes
+        Anewdoublearray
+        ret
+      otherwise => jerror $ "There can be only one argument (length) to create an array."
+
+    cgForeign JMultiNewArray = do
+        idrisToJava argsWithTypes
+        let arrayType = refTyClassName $ fdescRefDescriptor returns
+        Multianewarray arrayType (List.length args)
+        ret
+
+    cgForeign JSetArray = case args of
+      ((arrFDesc, arr) :: rest@(arg1 :: arg2 :: args)) => do
+        let value = last rest
+        let indices = init rest
+        let valueDesc = fdescFieldDescriptor (fst value)
+        Aload $ locIndex arr
+        Checkcast $ refTyClassName (fdescRefDescriptor arrFDesc)
+        idrisToJavaLoadArray $ (\(fdesc, lvar) => (fdescFieldDescriptor fdesc, lvar)) <$> indices
+        idrisToJava [(valueDesc, snd value)]
+        arrayStore valueDesc
+        javaToIdris (fdescTypeDescriptor returns)
+        ret
+      otherwise => jerror $ "Invalid arguments while trying to set an element inside array: " ++ show args
+
+    cgForeign JGetArray = case args of
+      ((arrFDesc, arr) :: indices@(index :: restIndices)) => do
+        Aload $ locIndex arr
+        Checkcast $ refTyClassName (fdescRefDescriptor arrFDesc)
+        idrisToJavaLoadArray $ (\(fdesc, lvar) => (fdescFieldDescriptor fdesc, lvar)) <$> indices
+        Aaload
+        javaToIdris (fdescTypeDescriptor returns)
+        ret
+      otherwise => jerror $ "Invalid arguments while trying to get an element from array: " ++ show args
+
+    cgForeign JArrayLength = case args of
+      [(arrFDesc, arr)] => do
+        Aload $ locIndex arr
+        Checkcast $ refTyClassName (fdescRefDescriptor arrFDesc)
+        Arraylength
+        javaToIdris (fdescTypeDescriptor returns)
+        ret
+      otherwise => jerror $ "Invalid arguments while trying to get length of an array: " ++ show args
+
     cgForeign (JClassLiteral "int") = do getPrimitiveClass "java/lang/Integer"; ret
     cgForeign (JClassLiteral "byte") = do getPrimitiveClass "java/lang/Byte"; ret
     cgForeign (JClassLiteral "char") = do getPrimitiveClass "java/lang/Character"; ret
