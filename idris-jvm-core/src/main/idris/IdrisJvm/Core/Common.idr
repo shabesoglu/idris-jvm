@@ -96,6 +96,18 @@ repeatObjectDesc n = repeatString n "Ljava/lang/Object;"
 sig : Nat -> String
 sig nArgs = "(" ++ repeatObjectDesc nArgs ++  ")Ljava/lang/Object;"
 
+anewarray : FieldTypeDescriptor -> Asm ()
+anewarray FieldTyDescByte          = Anewbytearray
+anewarray FieldTyDescChar          = Anewchararray
+anewarray FieldTyDescShort         = Anewshortarray
+anewarray FieldTyDescBoolean       = Anewbooleanarray
+anewarray FieldTyDescArray         = jerror $ "array is not a valid type for a single dimensional array"
+anewarray FieldTyDescDouble        = Anewdoublearray
+anewarray FieldTyDescFloat         = Anewfloatarray
+anewarray FieldTyDescInt           = Anewintarray
+anewarray FieldTyDescLong          = Anewlongarray
+anewarray (FieldTyDescReference f) = Anewarray $ asmRefTyDesc f
+
 arrayDesc : String -> Nat -> String
 arrayDesc cname dimensions =
   let arrayPrefix = cast $ replicate dimensions '['

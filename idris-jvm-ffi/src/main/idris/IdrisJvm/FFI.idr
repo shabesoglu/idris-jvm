@@ -16,15 +16,6 @@ data Annotation = Ann AnnotationTypeName (List AnnotationNameValuePair)
 
 data JVM_NativeTy = Class String
                   | Interface String
-                  | Array JVM_NativeTy
-                  | JavaBoolean
-                  | JavaByte
-                  | JavaChar
-                  | JavaShort
-                  | JavaInt
-                  | JavaLong
-                  | JavaFloat
-                  | JavaDouble
 
 data JVM_Native  : JVM_NativeTy -> Type where
   MkJVMNative : (ty : JVM_NativeTy) -> JVM_Native ty
@@ -35,7 +26,7 @@ mutual
                  | SetStaticField JVM_NativeTy String
                  | Constructor
                  | New
-                 | NewArray JVM_NativeTy
+                 | NewArray
                  | GetArray
                  | SetArray
                  | MultiNewArray
@@ -80,10 +71,10 @@ mutual
       JVM_Nullable : JVM_Types (Maybe (JVM_Native t))
       JVM_NativeT : JVM_Types (JVM_Native a)
       JVM_IntT    : JVM_IntTypes i -> JVM_Types i
-      JVM_ArrayT  : JVM_Types (JVM_Array t)
+      JVM_ArrayT  : JVM_Types t -> JVM_Types (JVM_Array t)
 
-  data JVM_Array : JVM_NativeTy -> Type where
-    MkArray : (elemTy: JVM_NativeTy) -> JVM_Array elemTy
+  data JVM_Array : Type -> Type where
+    MkJvmTypesArray : JVM_Types t -> JVM_Array t
 
   ||| A descriptor for the JVM FFI. See the constructors of `JVM_Types`
   ||| and `JVM_IntTypes` for the concrete types that are available.
@@ -112,56 +103,20 @@ new : (ty : Type) -> {auto fty : FTy FFI_JVM [] ty} -> ty
 new ty = javacall New ty
 
 %inline
-newArray : (elemTy: JVM_NativeTy) -> Nat -> JVM_IO (JVM_Array elemTy)
-newArray elemTy size = javacall (NewArray elemTy) (Int -> JVM_IO $ JVM_Array elemTy) (cast size)
+newArray : (elemTy: Type) -> Nat -> {auto jvmElemTy: JVM_Types elemTy} -> JVM_IO (JVM_Array elemTy)
+newArray elemTy size = javacall NewArray (Int -> JVM_IO $ JVM_Array elemTy) (cast size)
 
 %inline
 setArray : (ty : Type) -> {auto fty : FTy FFI_JVM [] ty} -> ty
 setArray ty = javacall SetArray ty
 
 %inline
-arrayLength : JVM_Array elemTy -> JVM_IO Nat
-arrayLength arr = cast <$> javacall ArrayLength (JVM_Array elemTy -> JVM_IO Int) arr
+arrayLength : {auto ft: JVM_Types elemTy} -> JVM_Array elemTy -> JVM_IO Nat
+arrayLength {elemTy} arr = cast <$> javacall ArrayLength (JVM_Array elemTy -> JVM_IO Int) arr
 
 %inline
 getArray : (ty : Type) -> {auto fty : FTy FFI_JVM [] ty} -> ty
 getArray ty = javacall GetArray ty
-
-%inline
-newBooleanArray : Nat -> JVM_IO (JVM_Array JavaBoolean)
-newBooleanArray size = newArray JavaBoolean size
-
-%inline
-newByteArray : Nat -> JVM_IO (JVM_Array JavaByte)
-newByteArray size = newArray JavaByte size
-
-%inline
-newCharArray : Nat -> JVM_IO (JVM_Array JavaChar)
-newCharArray size = newArray JavaChar size
-
-%inline
-newShortArray : Nat -> JVM_IO (JVM_Array JavaShort)
-newShortArray size = newArray JavaShort size
-
-%inline
-newIntArray : Nat -> JVM_IO (JVM_Array JavaInt)
-newIntArray size = newArray JavaInt size
-
-%inline
-newLongArray : Nat -> JVM_IO (JVM_Array JavaLong)
-newLongArray size = newArray JavaLong size
-
-%inline
-newFloatArray : Nat -> JVM_IO (JVM_Array JavaFloat)
-newFloatArray size = newArray JavaFloat size
-
-%inline
-newDoubleArray : Nat -> JVM_IO (JVM_Array JavaDouble)
-newDoubleArray size = newArray JavaDouble size
-
-arrayElemType : Nat -> (elemTy: JVM_NativeTy) -> JVM_NativeTy
-arrayElemType Z elemTy = elemTy
-arrayElemType (S k) elemTy = Array (arrayElemType k elemTy)
 
 %inline
 newMultiArray : (ty : Type) -> {auto fty : FTy FFI_JVM [] ty} -> ty

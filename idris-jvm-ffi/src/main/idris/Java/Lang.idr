@@ -99,10 +99,10 @@ namespace Object
   Object = JVM_Native ObjectClass
 
   ObjectArray : Type
-  ObjectArray = JVM_Array ObjectClass
+  ObjectArray = JVM_Array Object
 
   ObjectArray2d : Type
-  ObjectArray2d = JVM_Array (Array ObjectClass)
+  ObjectArray2d = JVM_Array (JVM_Array Object)
 
   toString : Object -> JVM_IO String
   toString obj = invokeInstance "toString" (Object -> JVM_IO String) obj
@@ -154,7 +154,7 @@ namespace JavaString
   StringClass = Class "java/lang/String"
 
   StringArray : Type
-  StringArray = JVM_Array StringClass
+  StringArray = JVM_Array String
 
   boolToString : Bool -> String
   boolToString b = unsafePerformIO $ invokeStatic StringClass "valueOf" (Bool -> JVM_IO String) b
@@ -180,6 +180,5 @@ Inherits Object (Maybe String) where {}
 Inherits Object (JVM_Native t) where {}
 Inherits Object (Maybe (JVM_Native t)) where {}
 
-Inherits ObjectArray (JVM_Array (Class a)) where {}
-Inherits ObjectArray (JVM_Array (Interface a)) where {}
+Inherits ObjectArray (JVM_Array t) where {}
 

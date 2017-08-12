@@ -164,68 +164,16 @@ mutual
       InvokeMethod InvokeSpecial clazz "<init>" descriptor False
       ret
 
-    cgForeign (JNewArray elemTy) = case args of
+    cgForeign JNewArray = case args of
       [ty] => do
         idrisToJava argsWithTypes
-        Anewarray elemTy
+        let arrDesc = fdescFieldDescriptor returns
+        let elemDesc = case arrDesc of
+          FieldTyDescReference (ArrayDesc elem) => elem
+          otherwise => jerror $ "Invalid return type while creating an array" ++ show returns
+        anewarray elemDesc
         ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array: " ++ elemTy
-
-    cgForeign JNewBooleanArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewbooleanarray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
-
-    cgForeign JNewByteArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewbytearray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
-
-    cgForeign JNewCharArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewchararray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
-
-    cgForeign JNewShortArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewshortarray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
-
-    cgForeign JNewIntArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewintarray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
-
-    cgForeign JNewLongArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewlongarray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
-
-    cgForeign JNewFloatArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewfloatarray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
-
-    cgForeign JNewDoubleArray = case args of
-      [ty] => do
-        idrisToJava argsWithTypes
-        Anewdoublearray
-        ret
-      otherwise => jerror $ "There can be only one argument (length) to create an array."
+      otherwise => jerror $ "There can be only one argument (length) to create an array" ++ show args
 
     cgForeign JMultiNewArray = do
         idrisToJava argsWithTypes

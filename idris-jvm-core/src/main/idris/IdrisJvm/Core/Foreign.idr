@@ -14,7 +14,7 @@ data JForeign = JStatic String String
               | JSetInstanceField String String
               | JInterface String String
               | JNew String
-              | JNewArray String
+              | JNewArray
               | JMultiNewArray
               | JSetArray
               | JGetArray
@@ -60,27 +60,7 @@ mutual
     tryParseMultiNewArrayDescriptor returns ffi argsDesc = tryParseSetArrayDescriptor returns ffi argsDesc
 
     tryParseNewArrayDescriptor : FDesc -> FDesc -> List (FDesc, LVar) -> JForeign
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FApp "Class" [FStr cname]]) argsDesc
-      = JNewArray cname
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FApp "Interface" [FStr cname]]) argsDesc
-      = JNewArray cname
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaInt"]) argsDesc
-      = JNewIntArray
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaByte"]) argsDesc
-      = JNewByteArray
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaChar"]) argsDesc
-      = JNewCharArray
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaBoolean"]) argsDesc
-      = JNewBooleanArray
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaShort"]) argsDesc
-      = JNewShortArray
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaLong"]) argsDesc
-      = JNewLongArray
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaFloat"]) argsDesc
-      = JNewFloatArray
-    tryParseNewArrayDescriptor returns ffiDesc@(FApp "NewArray" [FCon "JavaDouble"]) argsDesc
-      = JNewDoubleArray
-
+    tryParseNewArrayDescriptor returns (FCon "NewArray") argsDesc = JNewArray
     tryParseNewArrayDescriptor returns ffi argsDesc = tryParseMultiNewArrayDescriptor returns ffi argsDesc
 
     tryParseConstructorDescriptor : FDesc -> FDesc -> List (FDesc, LVar) -> JForeign
@@ -264,15 +244,6 @@ mutual
   fdescFieldDescriptor (FCon "JVM_Double") = FieldTyDescDouble
   fdescFieldDescriptor (FCon "JVM_Bool") = FieldTyDescBoolean
 
-  fdescFieldDescriptor (FCon "JavaChar") = FieldTyDescChar
-  fdescFieldDescriptor (FCon "JavaByte") = FieldTyDescByte
-  fdescFieldDescriptor (FCon "JavaShort") = FieldTyDescShort
-  fdescFieldDescriptor (FCon "JavaInt") = FieldTyDescInt
-  fdescFieldDescriptor (FCon "JavaLong") = FieldTyDescLong
-  fdescFieldDescriptor (FCon "JavaFloat") = FieldTyDescFloat
-  fdescFieldDescriptor (FCon "JavaDouble") = FieldTyDescDouble
-  fdescFieldDescriptor (FCon "JavaBoolean") = FieldTyDescBoolean
-
   fdescFieldDescriptor (FCon "JVM_Str") = FieldTyDescReference $ ClassDesc "java/lang/String"
   fdescFieldDescriptor fdesc = FieldTyDescReference $ fdescRefDescriptor fdesc
 
@@ -280,38 +251,7 @@ mutual
   fdescRefDescriptor desc@(FApp "JVM_NativeT" [FApp "Class" [FStr typeName]]) = ClassDesc typeName
   fdescRefDescriptor desc@(FApp "JVM_NativeT" [FApp "Interface" [FStr typeName]]) = InterfaceDesc typeName
 
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FApp "Class" [FStr typeName]]) = ArrayDesc (FieldTyDescReference $ ClassDesc typeName)
-  fdescRefDescriptor desc@(FApp "Array" [FApp "Class" [FStr typeName]]) = ArrayDesc (FieldTyDescReference $ ClassDesc typeName)
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FApp "Interface" [FStr typeName]]) = ArrayDesc (FieldTyDescReference $ InterfaceDesc typeName)
-  fdescRefDescriptor desc@(FApp "Array" [FApp "Interface" [FStr typeName]]) = ArrayDesc (FieldTyDescReference $ InterfaceDesc typeName)
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaBoolean"]) = ArrayDesc FieldTyDescBoolean
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaBoolean"]) = ArrayDesc FieldTyDescBoolean
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaByte"]) = ArrayDesc FieldTyDescByte
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaByte"]) = ArrayDesc FieldTyDescByte
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaChar"]) = ArrayDesc FieldTyDescChar
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaChar"]) = ArrayDesc FieldTyDescChar
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaShort"]) = ArrayDesc FieldTyDescShort
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaShort"]) = ArrayDesc FieldTyDescShort
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaInt"]) = ArrayDesc FieldTyDescInt
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaInt"]) = ArrayDesc FieldTyDescInt
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaLong"]) = ArrayDesc FieldTyDescLong
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaLong"]) = ArrayDesc FieldTyDescLong
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaFloat"]) = ArrayDesc FieldTyDescFloat
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaFloat"]) = ArrayDesc FieldTyDescFloat
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [FCon "JavaDouble"]) = ArrayDesc FieldTyDescDouble
-  fdescRefDescriptor desc@(FApp "Array" [FCon "JavaDouble"]) = ArrayDesc FieldTyDescDouble
-
-  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [elemDesc]) = ArrayDesc $ fdescFieldDescriptor elemDesc
-  fdescRefDescriptor desc@(FApp "Array" [elemDesc]) = ArrayDesc $ fdescFieldDescriptor elemDesc
+  fdescRefDescriptor desc@(FApp "JVM_ArrayT" [_, elemDesc]) = ArrayDesc $ fdescFieldDescriptor elemDesc
 
   fdescRefDescriptor desc@(FApp "JVM_Nullable" [FApp "Class" [FStr typeName]]) = NullableRefDesc typeName
   fdescRefDescriptor desc@(FApp "JVM_Nullable" [FApp "Interface" [FStr typeName]]) = NullableRefDesc typeName
